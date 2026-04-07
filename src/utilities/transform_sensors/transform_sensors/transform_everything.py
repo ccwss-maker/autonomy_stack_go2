@@ -1,7 +1,14 @@
 #!/usr/bin/env python
+import numpy as np
+
+# Compatibility shim for older transforms3d releases on newer NumPy.
+if not hasattr(np, 'float'):
+    np.float = float
+
 import rclpy
 from rclpy.node import Node
 from rclpy.time import Time
+from ament_index_python.packages import get_package_share_directory
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import PointCloud2, PointField
 from geometry_msgs.msg import TransformStamped, Vector3
@@ -11,7 +18,6 @@ import tf_transformations
 from transforms3d.quaternions import quat2mat
 
 from copy import deepcopy
-import numpy as np
 import yaml
 
 import os
@@ -32,6 +38,7 @@ class Repuber(Node):
         self.time_stamp_offset_set = False
         
         self.cam_offset = 0.046825
+        self.body_origin_shift_x = 0.3
 
         # Load calibration data
         calib_data = calib_data = {
@@ -45,14 +52,16 @@ class Repuber(Node):
                 'ang_z2y_proj': -0.28
             }
         try:
-            home_path = os.path.expanduser('~')
-            calib_file_path = os.path.join(home_path, 'Desktop/imu_calib_data.yaml')
+            calib_file_path = os.path.join(
+                get_package_share_directory('calibrate_imu'),
+                'imu_calib_data.yaml'
+            )
             calib_file = open(calib_file_path, 'r')
             calib_data = yaml.load(calib_file, Loader=yaml.FullLoader)
-            print("imu_calib.yaml loaded")
+            print(f"imu_calib.yaml loaded from {calib_file_path}")
             calib_file.close()
-        except:
-            print("imu_calib.yaml not found, using defualt values")
+        except Exception as exc:
+            print(f"imu_calib.yaml not found, using default values: {exc}")
             
         self.acc_bias_x = calib_data['acc_bias_x']
         self.acc_bias_y = calib_data['acc_bias_y']
@@ -67,7 +76,7 @@ class Repuber(Node):
         self.body2cloud_trans.header.stamp = self.get_clock().now().to_msg()
         self.body2cloud_trans.header.frame_id = "body"
         self.body2cloud_trans.child_frame_id = "utlidar_lidar_1"
-        self.body2cloud_trans.transform.translation.x = 0.0
+        self.body2cloud_trans.transform.translation.x = self.body_origin_shift_x
         self.body2cloud_trans.transform.translation.y = 0.0
         self.body2cloud_trans.transform.translation.z = 0.0
         quat = tf_transformations.quaternion_from_euler(0, 2.87820258505555555556, 0)
@@ -80,17 +89,17 @@ class Repuber(Node):
         self.body2imu_trans.header.stamp = self.get_clock().now().to_msg()
         self.body2imu_trans.header.frame_id = "body"
         self.body2imu_trans.child_frame_id = "utlidar_imu_1"
-        self.body2imu_trans.transform.translation.x = 0.0
+        self.body2imu_trans.transform.translation.x = self.body_origin_shift_x
         self.body2imu_trans.transform.translation.y = 0.0
         self.body2imu_trans.transform.translation.z = 0.0
-        quat = tf_transformations.quaternion_from_euler(0, 2.87820258505555555556, 3.14159265358)
+        quat = tf_transformations.quaternion_from_euler(0, 2.87820258505555555556, 0)
         self.body2imu_trans.transform.rotation.x = quat[0]
         self.body2imu_trans.transform.rotation.y = quat[1]
         self.body2imu_trans.transform.rotation.z = quat[2]
         self.body2imu_trans.transform.rotation.w = quat[3]
         
-        self.x_filter_min = -0.7
-        self.x_filter_max = -0.1
+        self.x_filter_min = -0.7 + self.body_origin_shift_x
+        self.x_filter_max = -0.1 + self.body_origin_shift_x
         self.y_filter_min = -0.3
         self.y_filter_max = 0.3
         self.z_filter_min = -0.6 - self.cam_offset

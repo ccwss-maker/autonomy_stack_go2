@@ -19,6 +19,7 @@ include_directories(include include/nlohmann)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -30,7 +31,7 @@ find_package(go2_sport_api REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 add_executable(calibrate_imu src/calibrate_imu.cpp)
-ament_target_dependencies(calibrate_imu rclcpp std_msgs sensor_msgs geometry_msgs unitree_api go2_sport_api)
+ament_target_dependencies(calibrate_imu ament_index_cpp rclcpp std_msgs sensor_msgs geometry_msgs unitree_api go2_sport_api)
 
 install(TARGETS
   calibrate_imu

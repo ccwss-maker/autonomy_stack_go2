@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <unistd.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include <sensor_msgs/msg/imu.hpp>
@@ -65,8 +66,7 @@ void imu_handler(const sensor_msgs::msg::Imu::ConstSharedPtr msg_in)
 }
 
 void serialize_to_file(){
-    const char* homeDir = getenv("HOME");
-    std::string file_path = std::string(homeDir) + "/Desktop/imu_calib_data.yaml";
+    std::string file_path = ament_index_cpp::get_package_share_directory("calibrate_imu") + "/imu_calib_data.yaml";
     std::ofstream file;
     file.open(file_path, std::ios::out);
     file << "acc_bias_x: " << acc_bias_x << std::endl;
@@ -78,6 +78,7 @@ void serialize_to_file(){
     file << "ang_z2x_proj: " << ang_z2x_proj << std::endl;
     file << "ang_z2y_proj: " << ang_z2y_proj << std::endl;
     file.close();
+    std::cout << "Calibration file saved to: " << file_path << std::endl;
 }
 
 void estimate_bias(){
