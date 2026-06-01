@@ -208,7 +208,7 @@ class Repuber(Node):
         
         acc_x = data.linear_acceleration.x
         acc_y = -data.linear_acceleration.y
-        acc_z = -data.linear_acceleration.z
+        acc_z = data.linear_acceleration.z
         
         acc_x2 = np.cos(theta) * acc_x - np.sin(theta) * acc_z
         acc_y2 = acc_y

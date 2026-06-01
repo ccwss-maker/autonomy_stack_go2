@@ -43,7 +43,7 @@ void imu_handler(const sensor_msgs::msg::Imu::ConstSharedPtr msg_in)
 
     double acc_x = msg_in->linear_acceleration.x;
     double acc_y = -msg_in->linear_acceleration.y;
-    double acc_z = -msg_in->linear_acceleration.z;
+    double acc_z = msg_in->linear_acceleration.z;
 
     double acc_x2 = acc_x * cos(theta) - acc_z * sin(theta);
     double acc_y2 = acc_y;
