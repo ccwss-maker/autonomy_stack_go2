@@ -37,6 +37,10 @@ install(TARGETS
   calibrate_imu
   DESTINATION lib/${PROJECT_NAME})
 
+install(FILES
+  imu_calib_data.yaml
+  DESTINATION share/${PROJECT_NAME})
+
 # install(DIRECTORY
 #   launch
 #   DESTINATION share/${PROJECT_NAME}/

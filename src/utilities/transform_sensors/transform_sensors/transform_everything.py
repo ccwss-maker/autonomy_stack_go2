@@ -168,6 +168,8 @@ class Repuber(Node):
 
 
     def imu_callback(self, data):    
+        if not self.time_stamp_offset_set:
+            return
         trans = np.zeros(3)
         trans[0] = self.body2imu_trans.transform.translation.x
         trans[1] = self.body2imu_trans.transform.translation.y
