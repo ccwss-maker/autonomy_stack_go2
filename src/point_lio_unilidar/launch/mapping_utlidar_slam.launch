@@ -1,6 +1,6 @@
 <launch>
 	<!-- SLAM-only launch for Unitree L1 LiDAR mounted on Go2. -->
-	<arg name="rviz" default="false" />
+	<arg name="rviz" default="true" />
 
 	<node pkg="transform_sensors" exec="transform_everything" name="transform_everything" output="screen" />
 
@@ -21,6 +21,8 @@
 		<param name="runtime_pos_log_enable" value="false" />
 		<param name="publish.scan_publish_en" value="true" />
 		<param name="publish.velocity_pub_en" value="false" />
+		<param name="pcd_save.pcd_save_en" value="true" />
+		<param name="pcd_save.interval" value="-1" />
 
 		<remap from="/cloud_registered" to="/registered_scan" />
 		<remap from="/aft_mapped_to_init" to="/state_estimation" />

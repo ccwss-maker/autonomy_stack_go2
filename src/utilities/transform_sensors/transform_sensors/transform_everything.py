@@ -15,8 +15,6 @@ from geometry_msgs.msg import TransformStamped, Vector3
 import sensor_msgs_py.point_cloud2 as pc2
 import tf_transformations
 
-from transforms3d.quaternions import quat2mat
-
 from copy import deepcopy
 import yaml
 
@@ -26,7 +24,7 @@ class Repuber(Node):
     def __init__(self):
         super().__init__('sensor_transformer')
         self.imu_sub = self.create_subscription(Imu, '/utlidar/imu', self.imu_callback, 50)
-        self.cloud_sub = self.create_subscription(PointCloud2, '/utlidar/cloud', self.cloud_callback, 50)
+        self.cloud_sub = self.create_subscription(PointCloud2, '/utlidar/cloud_base', self.cloud_callback, 50)
         
         self.imu_raw_pub = self.create_publisher(Imu, '/utlidar/transformed_raw_imu', 50)
         self.imu_pub = self.create_publisher(Imu, '/utlidar/transformed_imu', 50)
@@ -125,13 +123,8 @@ class Repuber(Node):
         cloud_arr = pc2.read_points_list(data)
         points = np.array(cloud_arr)
 
-        transform = self.body2cloud_trans.transform
-        mat = quat2mat(np.array([transform.rotation.w, transform.rotation.x, transform.rotation.y, transform.rotation.z]))
-        translation = np.array([transform.translation.x, transform.translation.y, transform.translation.z])
-        
-        transformed_points = points
-        transformed_points[:, 0:3] = points[:, 0:3] @ mat.T + translation
-        transformed_points[:, 2] -= self.cam_offset
+        # /utlidar/cloud_base is already expressed in the robot base frame.
+        transformed_points = points.copy()
         i = 0
         remove_list = []
         transformed_points = transformed_points.tolist()
@@ -239,10 +232,6 @@ class Repuber(Node):
         transformed_imu.orientation.y = 0.0
         transformed_imu.orientation.z = 0.0
         transformed_imu.orientation.w = 1.0
-        
-        transformed_imu.linear_acceleration.x = 0.0
-        transformed_imu.linear_acceleration.y = 0.0
-        transformed_imu.linear_acceleration.z = 0.0
         
         self.imu_pub.publish(transformed_imu)
 

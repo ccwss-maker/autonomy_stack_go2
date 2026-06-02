@@ -654,24 +654,6 @@ void map_incremental()
     ikdtree.Add_Points(PointNoNeedDownsample, false);
 }
 
-void publish_init_kdtree(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubLaserCloudFullRes)
-{
-    int size_init_ikdtree = ikdtree.size();
-    PointCloudXYZI::Ptr laserCloudInit(new PointCloudXYZI(size_init_ikdtree, 1));
-
-    sensor_msgs::msg::PointCloud2 laserCloudmsg;
-    PointVector().swap(ikdtree.PCL_Storage);
-    ikdtree.flatten(ikdtree.Root_Node, ikdtree.PCL_Storage, NOT_RECORD);
-
-    laserCloudInit->points = ikdtree.PCL_Storage;
-    pcl::toROSMsg(*laserCloudInit, laserCloudmsg);
-
-    laserCloudmsg.header.stamp = get_ros_time(lidar_end_time);
-    laserCloudmsg.header.frame_id = "camera_init";
-    pubLaserCloudFullRes->publish(laserCloudmsg);
-}
-
-
 PointCloudXYZI::Ptr pcl_wait_pub(new PointCloudXYZI(500000, 1));
 PointCloudXYZI::Ptr pcl_wait_save(new PointCloudXYZI());
 void publish_frame_world(rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubLaserCloudFullRes)
@@ -981,8 +963,6 @@ int main(int argc, char **argv)
 
     auto pubLaserCloudEffect = node->create_publisher<sensor_msgs::msg::PointCloud2>("/cloud_effected", 1000);
 
-    auto pubLaserCloudMap = node->create_publisher<sensor_msgs::msg::PointCloud2>("/Laser_map", 1000);
-
     auto pubOdomAftMapped = node->create_publisher<nav_msgs::msg::Odometry>("/aft_mapped_to_init", 1000);
 
     auto pubSportModeState = node->create_publisher<unitree_go::msg::SportModeState>(velocity_topic, 1000);
@@ -1130,7 +1110,6 @@ int main(int argc, char **argv)
             ikdtree.Build(init_feats_world->points);
             init_map = true;
 
-            publish_init_kdtree(pubLaserCloudMap);
             continue;
         }
 

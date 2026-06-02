@@ -2,7 +2,7 @@
     ros__parameters:
         use_sim_time: true
 
-        use_imu_as_input: true
+        use_imu_as_input: false
         runtime_pos_log_enable: false
 
         filter_size_surf_min: 0.2
@@ -45,9 +45,9 @@
             match_s: 81.0
             fov_degree: 180.0 
             det_range: 100.0
-            gravity_align: false # true to align the z axis of world frame with the direction of gravity, and the gravity direction should be specified below
-            gravity: [0.0, 0.0, 0.0] # [0.0, 9.810, 0.0] # gravity to be aligned
-            gravity_init: [0.0, 0.0, 0.0] # [0.0, 9.810, 0.0] # # preknown gravity in the first IMU body frame, use when imu_en is false or start from a non-stationary state
+            gravity_align: true # align camera_init/world z with gravity instead of the initial lidar pose
+            gravity: [0.0, 0.0, -9.81] # ROS z-up world gravity
+            gravity_init: [0.0, 0.0, -9.81] # fallback gravity in the first IMU body frame
             
             # transform from imu to lidar
             extrinsic_T: [ 0.007698, 0.014655, -0.00667] # ulhk # [-0.5, 1.4, 1.5] # utbm
@@ -62,13 +62,13 @@
             publish_odometry_without_downsample: true  
 
         publish:
-            path_en: false                 # false: close the path output
+            path_en: true                 # false: close the path output
             scan_publish_en: false         # false: close all the point cloud output
-            velocity_pub_en: true         # true: publish linear velocity using unitree_go/msg/SportModeState
+            velocity_pub_en: false         # true: publish linear velocity using unitree_go/msg/SportModeState
             velocity_topic: "/sportmodestate_lin_vel"
             scan_bodyframe_pub_en: false  # true: output the point cloud scans in IMU-body-frame
 
         pcd_save:
-            pcd_save_en: false       # save map to pcd file
+            pcd_save_en: true       # save map to pcd file
             interval: -1            # how many LiDAR frames saved in each pcd file; 
                                         # -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.
